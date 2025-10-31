@@ -8,7 +8,7 @@
   const DEFAULT_START = '2024-01-01';
   const DEFAULT_TAX_RATE = 42;
   const DEFAULT_GROWTH_RATE = 35;
-  const DEFAULT_PROJECTION_YEARS = 5;
+  const DEFAULT_PROJECTION_YEARS = 10;
   const roundTo = (value, decimals = 6) => {
     if (!Number.isFinite(value)) return 0;
     const factor = 10 ** decimals;

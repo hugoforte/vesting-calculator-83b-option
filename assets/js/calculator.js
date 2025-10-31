@@ -3,6 +3,7 @@
     TOTAL_SHARES_OUTSTANDING,
     COMPANY_POST_MONEY_VALUATION,
     FMV_BASE,
+    TOTAL_SHARE_VALUE_AT_GRANT,
     CONV_DATE,
   } = window.calcConstants;
   const { formatCurrency, formatInteger } = window.calcFormatters;
@@ -171,6 +172,10 @@
       const totalShares = state.grants.reduce((sum, grant) => sum + grant.shares, 0);
       els.outTotalVested83b.textContent = totalShares ? formatInteger(totalShares) : '—';
       els.outTax83b.textContent = totalShares ? '$0' : '—';
+      if (els.outShareValue83b) {
+        const shareValue = totalShares ? totalShares * FMV_BASE : 0;
+        els.outShareValue83b.textContent = totalShares ? formatCurrency(shareValue) : '—';
+      }
     };
 
     const renderTable = (buckets) => {
@@ -178,6 +183,10 @@
       const years = Array.from(buckets.keys()).sort((a, b) => a - b);
       let totalIncome = 0;
       let totalTax = 0;
+      let totalShares = 0;
+      let runningShares = 0;
+      let runningValue = 0;
+      let rowsRendered = 0;
 
       years.forEach((year) => {
         const bucket = buckets.get(year);
@@ -186,6 +195,10 @@
         const avgFmv = bucket.shares ? bucket.income / bucket.shares : 0;
         totalIncome += bucket.income;
         totalTax += bucket.tax;
+        totalShares += bucket.shares;
+        runningShares += bucket.shares;
+        runningValue += bucket.income;
+        rowsRendered += 1;
 
         const row = document.createElement('tr');
         row.innerHTML = `
@@ -194,6 +207,8 @@
           <td>${formatCurrency(avgFmv)}</td>
           <td>${formatCurrency(bucket.income)}</td>
           <td>${formatCurrency(bucket.tax)}</td>
+          <td>${formatInteger(runningShares)}</td>
+          <td>${formatCurrency(runningValue)}</td>
         `;
         els.tableBody.appendChild(row);
       });
@@ -203,12 +218,23 @@
           ? 'No post-conversion vesting on or after 2025 based on the current grant dates.'
           : 'Add at least one grant to see tax projections.';
         const row = document.createElement('tr');
-        row.innerHTML = `<td colspan="5" style="text-align:left;color:#8ea2c9">${message}</td>`;
+        row.innerHTML = `<td colspan="7" style="text-align:left;color:#8ea2c9">${message}</td>`;
         els.tableBody.appendChild(row);
       }
 
-      els.sumIncome.textContent = formatCurrency(totalIncome);
-      els.sumTax.textContent = formatCurrency(totalTax);
+      if (rowsRendered > 0) {
+        if (els.sumNewShares) els.sumNewShares.textContent = formatInteger(totalShares);
+        els.sumIncome.textContent = formatCurrency(totalIncome);
+        els.sumTax.textContent = formatCurrency(totalTax);
+        if (els.sumTotalShares) els.sumTotalShares.textContent = formatInteger(runningShares);
+        if (els.sumTotalValue) els.sumTotalValue.textContent = formatCurrency(runningValue);
+      } else {
+        if (els.sumNewShares) els.sumNewShares.textContent = '—';
+        els.sumIncome.textContent = '—';
+        els.sumTax.textContent = '—';
+        if (els.sumTotalShares) els.sumTotalShares.textContent = '—';
+        if (els.sumTotalValue) els.sumTotalValue.textContent = '—';
+      }
     };
 
     const calculate = () => {
@@ -351,10 +377,11 @@
       }
     };
 
-  if (els.totalSharesConst) els.totalSharesConst.textContent = formatInteger(TOTAL_SHARES_OUTSTANDING);
-  if (els.postMoneyConst) els.postMoneyConst.textContent = formatCurrency(COMPANY_POST_MONEY_VALUATION);
-  if (els.fmvStart) els.fmvStart.textContent = formatCurrency(FMV_BASE);
-  if (els.convLabel) els.convLabel.textContent = dateFormatter.format(CONV_DATE);
+    if (els.totalSharesConst) els.totalSharesConst.textContent = formatInteger(TOTAL_SHARES_OUTSTANDING);
+    if (els.postMoneyConst) els.postMoneyConst.textContent = formatCurrency(COMPANY_POST_MONEY_VALUATION);
+    if (els.totalValueConst) els.totalValueConst.textContent = formatCurrency(TOTAL_SHARE_VALUE_AT_GRANT);
+    if (els.fmvStart) els.fmvStart.textContent = formatCurrency(FMV_BASE);
+    if (els.convLabel) els.convLabel.textContent = dateFormatter.format(CONV_DATE);
 
     renderGrants();
     els.addGrantBtn.addEventListener('click', () => addGrant());
@@ -365,7 +392,7 @@
     addGrant({
       shares: 10000,
       start: '2023-01-01',
-      years: 4,
+      years: 7,
       taxRate: 42,
       growthRate: 35,
     });

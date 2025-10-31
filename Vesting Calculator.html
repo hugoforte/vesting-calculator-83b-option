@@ -11,7 +11,7 @@
     <h1>83(b) Vesting Tax Calculator <span style="opacity:.6;font-size:14px">Lettr Labs</span></h1>
     <p class="lead">Constants below reflect Lettr Labs today. You can change inputs; constants are fixed.</p>
 
-    <div class="card">
+    <div class="card compact">
       <div class="card-header">
         <h2>Grants</h2>
         <button type="button" id="addGrantBtn" class="btn">Add Grant</button>
@@ -20,28 +20,30 @@
       <div id="grantsList" class="stack-vertical"></div>
     </div>
 
-    <div class="card" style="margin-top:8px">
+    <div class="card compact" style="margin-top:8px">
       <h2>Constants</h2>
       <div class="stack">
         <div class="kv"><div>Total shares outstanding</div><div id="totalSharesConst">—</div></div>
         <div class="kv"><div>Company post-money valuation</div><div id="postMoneyConst">—</div></div>
+        <div class="kv"><div>Total share value @ grant</div><div id="totalValueConst">—</div></div>
         <div class="kv"><div>FMV per share at grant</div><div id="fmvStart">—</div></div>
         <div class="kv"><div>Conversion to C-corp date</div><div id="convLabel">—</div></div>
       </div>
     </div>
 
     <div class="grid">
-      <div class="card good" id="with83b">
+      <div class="card good wide" id="with83b">
         <div class="banner">WITH 83(b) – Best practice</div>
         <h2>With 83(b)</h2>
         <div class="stack">
           <div class="kv"><div>Tax during vesting</div><div id="outTax83b">$0</div></div>
           <div class="kv"><div>Total vested by end</div><div id="outTotalVested83b">—</div></div>
+          <div class="kv"><div>Total share value</div><div id="outShareValue83b">—</div></div>
         </div>
         <p class="lead" style="font-size:13px;color:#9fe0b0">Assumes grant price equals FMV at grant ($5). With a timely 83(b), there is <strong>no ordinary income while vesting</strong>; tax happens only on a future sale (capital gains, potentially 0% federally if QSBS applies after 5 years).</p>
       </div>
 
-      <div class="card bad" id="without83b">
+      <div class="card bad wide" id="without83b">
         <div class="banner">WITHOUT 83(b) – Very costly</div>
         <h2>Without 83(b)</h2>
         <h3 style="margin-top:8px">Tax by Year (No 83(b))</h3>
@@ -53,14 +55,20 @@
               <th>FMV / share</th>
               <th>Ordinary income</th>
               <th>Tax</th>
+              <th>Total vested shares</th>
+              <th>Total vested value</th>
             </tr>
           </thead>
           <tbody></tbody>
           <tfoot>
             <tr>
-              <td colspan="3">Totals</td>
+              <td>Totals</td>
+              <td id="sumNewShares">—</td>
+              <td>—</td>
               <td id="sumIncome">—</td>
               <td id="sumTax">—</td>
+              <td id="sumTotalShares">—</td>
+              <td id="sumTotalValue">—</td>
             </tr>
           </tfoot>
         </table>

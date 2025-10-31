@@ -52,6 +52,8 @@ button{
   font-size:12px;
 }
 
+.btn-ghost.small{padding:6px 12px;font-size:12px;font-weight:600}
+
 .btn-ghost:hover{color:var(--text);border-color:rgba(122,162,255,.35)}
 
 .btn-ghost[disabled]{opacity:.35;cursor:not-allowed;border-color:transparent;color:var(--muted)}
@@ -83,8 +85,73 @@ input[type="date"]{
   color:var(--text);
 }
 
+input[readonly]{
+  cursor:default;
+  color:var(--muted);
+  background:#10163a;
+}
+
 .inputs-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
-.grid{display:flex;flex-direction:column;gap:18px}
+.assumptions-card{margin-bottom:16px}
+.assumptions-grid{margin-top:8px}
+
+.tax-summary-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+  gap:16px;
+  margin-bottom:18px;
+}
+
+.tax-panel{
+  background:#0f1540;
+  border:1px solid #202a64;
+  border-radius:14px;
+  padding:18px 16px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.tax-panel-label{
+  font-size:13px;
+  font-weight:600;
+  letter-spacing:.25px;
+  text-transform:uppercase;
+  color:var(--muted);
+}
+
+.tax-panel-value{
+  font-size:28px;
+  font-weight:700;
+}
+
+.tax-panel.good .tax-panel-value{color:var(--ok)}
+.tax-panel.bad .tax-panel-value{color:var(--warn)}
+
+.tax-panel-caption{
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:.3px;
+  color:var(--muted);
+}
+
+.tax-panel-note{
+  font-size:13px;
+  color:var(--muted);
+  margin:4px 0 0;
+}
+
+.tax-panel-note strong{color:var(--text)}
+
+.tax-metrics{display:flex;flex-direction:column;gap:8px}
+
+.table-title{
+  margin:0 0 6px;
+  font-size:13px;
+  letter-spacing:.3px;
+  text-transform:uppercase;
+  color:var(--muted);
+}
 
 .stack{display:flex;gap:6px;flex-wrap:wrap}
 .stack-vertical{display:flex;flex-direction:column;gap:10px}
@@ -96,6 +163,8 @@ input[type="date"]{
 .grant-card+.grant-card{margin-top:12px}
 .grant-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
 .grant-head h3{margin:0;font-size:15px;color:var(--text)}
+.grant-title[contenteditable="true"]{cursor:text;padding:2px 4px;border-radius:6px;transition:background .15s ease,outline-color .15s ease,outline-width .15s ease}
+.grant-title[contenteditable="true"]:focus{outline:2px solid rgba(122,162,255,.45);background:rgba(122,162,255,.12)}
 .grant-card label{font-size:10px;text-transform:uppercase;letter-spacing:.3px;color:var(--muted)}
 .grant-card input{padding:8px 10px;font-size:13px}
 
@@ -106,12 +175,5 @@ th,td{padding:10px;border-bottom:1px solid #24306b;text-align:right}
 th:first-child,td:first-child{text-align:left}
 tfoot td{font-weight:700}
 
-.good{border:1px solid rgba(48,209,88,.5);box-shadow:0 0 0 1px rgba(48,209,88,.2) inset,0 10px 25px rgba(0,0,0,.25)}
-.good h2{color:var(--ok)}
-.good .banner{background:rgba(48,209,88,.1);border:1px solid rgba(48,209,88,.35);padding:10px;border-radius:12px;color:var(--ok);font-weight:800;letter-spacing:.2px;margin:-6px 0 10px}
-
-.bad{border:1px solid rgba(255,69,58,.55);box-shadow:0 0 0 1px rgba(255,69,58,.25) inset,0 10px 25px rgba(0,0,0,.25)}
-.bad h2{color:var(--warn)}
-.bad .banner{background:rgba(255,69,58,.12);border:1px solid rgba(255,69,58,.45);padding:10px;border-radius:12px;color:var(--warn);font-weight:800;letter-spacing:.2px;margin:-6px 0 10px}
-
-#with83b .lead{font-size:13px;color:#9fe0b0}
+.tax-panel.good{border:1px solid rgba(48,209,88,.5);box-shadow:0 0 0 1px rgba(48,209,88,.2) inset,0 10px 25px rgba(0,0,0,.25)}
+.tax-panel.bad{border:1px solid rgba(255,69,58,.45);box-shadow:0 0 0 1px rgba(255,69,58,.2) inset,0 10px 25px rgba(0,0,0,.25)}

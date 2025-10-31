@@ -10,6 +10,40 @@
   <div class="wrap">
     <h1>83(b) Vesting Tax Calculator </h1>
 
+    <div class="card compact assumptions-card">
+      <div class="card-header">
+        <h2>Assumptions</h2>
+        <button type="button" id="resetAssumptionsBtn" class="btn-ghost small">Reset assumptions</button>
+      </div>
+      <p class="lead small">Set company-wide levers that every grant will use. Defaults reflect your current 409A and planned conversion timeline.</p>
+      <div class="inputs-grid assumptions-grid">  
+        <div>
+          <label for="assumptionTotalShares">Total outstanding shares</label>
+          <input id="assumptionTotalShares" type="number" min="1" step="1" data-assumption-field="totalShares" value="14274880" />
+        </div>
+        <div>
+          <label for="assumptionPostMoney">Company valuation ($)</label>
+          <input id="assumptionPostMoney" type="number" min="0" step="1000" data-assumption-field="postMoney" value="50000000" />
+        </div>
+        <div>
+          <label for="assumptionFmv">FMV per share at grant ($)</label>
+          <input id="assumptionFmv" type="number" min="0" step="0.01" value="3.5" readonly tabindex="-1" />
+        </div>
+        <div>
+          <label for="assumptionConversionDate">Conversion to C-corp date</label>
+          <input id="assumptionConversionDate" type="date" data-assumption-field="conversionDate" value="2025-12-01" />
+        </div>
+        <div>
+          <label for="assumptionTaxRate">Your estimated tax rate (%)</label>
+          <input id="assumptionTaxRate" type="number" min="0" max="100" step="0.1" data-assumption-field="taxRate" value="42" />
+        </div>
+        <div>
+          <label for="assumptionGrowthRate">Est. growth per year (%)</label>
+          <input id="assumptionGrowthRate" type="number" min="-100" max="500" step="0.1" data-assumption-field="growthRate" value="35" />
+        </div>
+      </div>
+    </div>
+
     <div class="card compact">
       <div class="card-header">
         <h2>Grants</h2>
@@ -19,59 +53,54 @@
       <div id="grantsList" class="stack-vertical"></div>
     </div>
 
-    <div class="card compact" style="margin-top:8px">
-      <h2>Constants</h2>
-      <div class="stack">
-        <div class="kv"><div>Total shares outstanding</div><div id="totalSharesConst">—</div></div>
-        <div class="kv"><div>Company post-money valuation</div><div id="postMoneyConst">—</div></div>
-        <div class="kv"><div>Total share value @ grant</div><div id="totalValueConst">—</div></div>
-        <div class="kv"><div>FMV per share at grant</div><div id="fmvStart">—</div></div>
-        <div class="kv"><div>Conversion to C-corp date</div><div id="convLabel">—</div></div>
+    <div class="card wide" id="taxComparison">
+      <div class="card-header">
+        <h2>Taxes during vesting</h2>
       </div>
-    </div>
-
-    <div class="grid">
-      <div class="card good wide" id="with83b">
-        <div class="banner">WITH 83(b) – Best practice</div>
-        <h2>With 83(b)</h2>
-        <div class="stack">
-          <div class="kv"><div>Tax during vesting</div><div id="outTax83b">$0</div></div>
-          <div class="kv"><div>Total vested by end</div><div id="outTotalVested83b">—</div></div>
-          <div class="kv"><div>Total share value</div><div id="outShareValue83b">—</div></div>
+      <div class="tax-summary-grid">
+        <div class="tax-panel good">
+          <div class="tax-panel-label">With 83(b)</div>
+          <div class="tax-panel-value" id="outTax83b">$0</div>
+          <div class="tax-panel-caption">Ordinary income owed while vesting</div>
+          <div class="tax-metrics">
+            <div class="kv"><div>Total vested by end</div><div id="outTotalVested83b">—</div></div>
+            <div class="kv"><div>Total share value</div><div id="outShareValue83b">—</div></div>
+          </div>
+          <p class="tax-panel-note">Assumes grant price equals the FMV per share derived from valuation and outstanding shares. With a timely 83(b), there is <strong>no ordinary income while vesting</strong>; tax happens only on a future sale (capital gains, potentially 0% federally if QSBS applies after 5 years).</p>
         </div>
-        <p class="lead" style="font-size:13px;color:#9fe0b0">Assumes grant price equals FMV at grant ($5). With a timely 83(b), there is <strong>no ordinary income while vesting</strong>; tax happens only on a future sale (capital gains, potentially 0% federally if QSBS applies after 5 years).</p>
+        <div class="tax-panel bad">
+          <div class="tax-panel-label">Without 83(b)</div>
+          <div class="tax-panel-value" id="outTaxNo83b">—</div>
+          <div class="tax-panel-caption">Ordinary income tax owed during vesting</div>
+          <p class="tax-panel-note">Changing the valuation or outstanding shares updates the taxable income you would owe each vesting year.</p>
+        </div>
       </div>
-
-      <div class="card bad wide" id="without83b">
-        <div class="banner">WITHOUT 83(b) – Very costly</div>
-        <h2>Without 83(b)</h2>
-        <h3 style="margin-top:8px">Tax by Year (No 83(b))</h3>
-        <table id="tableNo83b">
-          <thead>
-            <tr>
-              <th>Tax year</th>
-              <th>New shares vested</th>
-              <th>FMV / share</th>
-              <th>Ordinary income</th>
-              <th>Tax</th>
-              <th>Total vested shares</th>
-              <th>Total vested value</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-          <tfoot>
-            <tr>
-              <td>Totals</td>
-              <td id="sumNewShares">—</td>
-              <td>—</td>
-              <td id="sumIncome">—</td>
-              <td id="sumTax">—</td>
-              <td id="sumTotalShares">—</td>
-              <td id="sumTotalValue">—</td>
-            </tr>
-          </tfoot>
-        </table>
-      </div>
+      <h3 class="table-title">Tax by year without 83(b)</h3>
+      <table id="tableNo83b">
+        <thead>
+          <tr>
+            <th>Tax year</th>
+            <th>New shares vested</th>
+            <th>FMV / share</th>
+            <th>Ordinary income</th>
+            <th>Tax</th>
+            <th>Total vested shares</th>
+            <th>Total vested value</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+        <tfoot>
+          <tr>
+            <td>Totals</td>
+            <td id="sumNewShares">—</td>
+            <td>—</td>
+            <td id="sumIncome">—</td>
+            <td id="sumTax">—</td>
+            <td id="sumTotalShares">—</td>
+            <td id="sumTotalValue">—</td>
+          </tr>
+        </tfoot>
+      </table>
     </div>
   </div>
 

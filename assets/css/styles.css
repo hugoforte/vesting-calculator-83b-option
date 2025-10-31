@@ -173,6 +173,9 @@ input[readonly]{
 table{width:100%;border-collapse:collapse;margin-top:10px;font-size:13px}
 th,td{padding:10px;border-bottom:1px solid #24306b;text-align:right}
 th:first-child,td:first-child{text-align:left}
+th[title]{cursor:help}
+th.tax-header{color:var(--warn);font-weight:700}
+td.tax-cell{color:var(--warn);font-weight:700}
 tfoot td{font-weight:700}
 
 .tax-panel.good{border:1px solid rgba(48,209,88,.5);box-shadow:0 0 0 1px rgba(48,209,88,.2) inset,0 10px 25px rgba(0,0,0,.25)}

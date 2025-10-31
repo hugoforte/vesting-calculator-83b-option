@@ -15,11 +15,6 @@
     outTax83b: document.getElementById('outTax83b'),
   outTaxNo83b: document.getElementById('outTaxNo83b'),
     tableBody: document.querySelector('#tableNo83b tbody'),
-    sumIncome: document.getElementById('sumIncome'),
-    sumTax: document.getElementById('sumTax'),
-    sumNewShares: document.getElementById('sumNewShares'),
-    sumTotalShares: document.getElementById('sumTotalShares'),
-    sumTotalValue: document.getElementById('sumTotalValue'),
     outShareValue83b: document.getElementById('outShareValue83b'),
   });
 

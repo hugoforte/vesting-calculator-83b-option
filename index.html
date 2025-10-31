@@ -3,8 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
   <title>83(b) Vesting Tax Calculator</title>
-  <link rel="stylesheet" href="assets/css/styles.css" />
+  <link rel="stylesheet" href="assets/css/styles.css?v=2025-10-31-1" />
 </head>
 <body>
   <div class="wrap">
@@ -79,35 +82,24 @@
       <table id="tableNo83b">
         <thead>
           <tr>
-            <th>Tax year</th>
-            <th>New shares vested</th>
-            <th>FMV / share</th>
-            <th>Ordinary income</th>
-            <th>Tax</th>
-            <th>Total vested shares</th>
-            <th>Total vested value</th>
+            <th title="Tax filing year when this vest triggers income without an 83(b) election">Tax year</th>
+            <th title="Number of new shares vesting in the given tax year">New shares vested</th>
+            <th title="Estimated fair market value per share used for tax calculations">FMV / share</th>
+            <th title="Estimated company valuation using FMV and total shares outstanding">Company valuation</th>
+            <th class="tax-header" title="Ordinary income tax owed if you do not file an 83(b) election">Est. Tax (only w/ no 83B)</th>
+            <th title="Total shares vested to date without an 83(b) election">Total vested shares</th>
+            <th title="Total value of vested shares using the FMV for that year">Total vested value</th>
           </tr>
         </thead>
         <tbody></tbody>
-        <tfoot>
-          <tr>
-            <td>Totals</td>
-            <td id="sumNewShares">—</td>
-            <td>—</td>
-            <td id="sumIncome">—</td>
-            <td id="sumTax">—</td>
-            <td id="sumTotalShares">—</td>
-            <td id="sumTotalValue">—</td>
-          </tr>
-        </tfoot>
       </table>
     </div>
   </div>
 
-  <script defer src="assets/js/config/constants.js"></script>
-  <script defer src="assets/js/utils/formatters.js"></script>
-  <script defer src="assets/js/utils/date.js"></script>
-  <script defer src="assets/js/dom.js"></script>
-  <script defer src="assets/js/calculator.js"></script>
+  <script defer src="assets/js/config/constants.js?v=2025-10-31-1"></script>
+  <script defer src="assets/js/utils/formatters.js?v=2025-10-31-1"></script>
+  <script defer src="assets/js/utils/date.js?v=2025-10-31-1"></script>
+  <script defer src="assets/js/dom.js?v=2025-10-31-1"></script>
+  <script defer src="assets/js/calculator.js?v=2025-10-31-1"></script>
 </body>
 </html>

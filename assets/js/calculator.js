@@ -173,15 +173,25 @@
         const baseYear = conversionYear ?? event.year;
         const stepsFromBase = Math.max(0, targetYear - baseYear);
         const growthMultiplier = stepsFromBase === 0 ? 1 : Math.pow(growthMultiplierBase, stepsFromBase);
-        const fmv = fmvBase * growthMultiplier;
+        const fmv = roundTo(fmvBase * growthMultiplier, 2);
         const income = event.shares * fmv;
         const tax = income * taxMultiplier;
 
-        const bucket = buckets.get(targetYear) || { year: targetYear, shares: 0, income: 0, tax: 0 };
-        bucket.shares += event.shares;
-        bucket.income += income;
-        bucket.tax += tax;
-        buckets.set(targetYear, bucket);
+        const bucket = buckets.get(targetYear);
+        if (bucket) {
+          bucket.shares += event.shares;
+          bucket.income += income;
+          bucket.tax += tax;
+          bucket.fmv = fmv;
+        } else {
+          buckets.set(targetYear, {
+            year: targetYear,
+            shares: event.shares,
+            income,
+            tax,
+            fmv,
+          });
+        }
       });
     });
 
@@ -477,39 +487,15 @@
     const renderTable = (buckets) => {
       els.tableBody.innerHTML = '';
       const years = Array.from(buckets.keys()).sort((a, b) => a - b);
-      let totalIncome = 0;
-      let totalTax = 0;
-      let totalShares = 0;
-      let runningShares = 0;
-      let runningValue = 0;
-      let rowsRendered = 0;
+      const rows = years
+        .map((year) => {
+          const bucket = buckets.get(year);
+          if (!bucket || bucket.shares <= 0) return null;
+          return { ...bucket, projected: false };
+        })
+        .filter(Boolean);
 
-      years.forEach((year) => {
-        const bucket = buckets.get(year);
-        if (!bucket || bucket.shares <= 0) return;
-
-        const avgFmv = bucket.shares ? bucket.income / bucket.shares : 0;
-        totalIncome += bucket.income;
-        totalTax += bucket.tax;
-        totalShares += bucket.shares;
-        runningShares += bucket.shares;
-        runningValue += bucket.income;
-        rowsRendered += 1;
-
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td>Taxes for ${year}</td>
-          <td>${formatInteger(bucket.shares)}</td>
-          <td>${formatCurrency(avgFmv)}</td>
-          <td>${formatCurrency(bucket.income)}</td>
-          <td>${formatCurrency(bucket.tax)}</td>
-          <td>${formatInteger(runningShares)}</td>
-          <td>${formatCurrency(runningValue)}</td>
-        `;
-        els.tableBody.appendChild(row);
-      });
-
-      if (!els.tableBody.children.length) {
+      if (!rows.length) {
         const conversionIso = state.assumptions.conversionDate || DEFAULT_ASSUMPTIONS.conversionDate;
         const conversion = createDateFromISO(conversionIso) || createDateFromISO(DEFAULT_ASSUMPTIONS.conversionDate);
         const conversionYear = conversion ? conversion.getFullYear() : 'the conversion year';
@@ -519,30 +505,90 @@
         const row = document.createElement('tr');
         row.innerHTML = `<td colspan="7" style="text-align:left;color:#8ea2c9">${message}</td>`;
         els.tableBody.appendChild(row);
+        return {
+          totalIncome: 0,
+          totalTax: 0,
+          rowsRendered: 0,
+        };
       }
 
-      if (rowsRendered > 0) {
-        if (els.sumNewShares) els.sumNewShares.textContent = formatInteger(totalShares);
-        els.sumIncome.textContent = formatCurrency(totalIncome);
-        els.sumTax.textContent = formatCurrency(totalTax);
-        if (els.sumTotalShares) els.sumTotalShares.textContent = formatInteger(runningShares);
-        if (els.sumTotalValue) els.sumTotalValue.textContent = formatCurrency(runningValue);
-      } else {
-        if (els.sumNewShares) els.sumNewShares.textContent = '—';
-        els.sumIncome.textContent = '—';
-        els.sumTax.textContent = '—';
-        if (els.sumTotalShares) els.sumTotalShares.textContent = '—';
-        if (els.sumTotalValue) els.sumTotalValue.textContent = '—';
+      const conversionIso = state.assumptions.conversionDate || DEFAULT_ASSUMPTIONS.conversionDate;
+      const conversion = createDateFromISO(conversionIso) || createDateFromISO(DEFAULT_ASSUMPTIONS.conversionDate);
+      const conversionYear = conversion ? conversion.getFullYear() : null;
+      const growthMultiplierBase = 1 + state.assumptions.growthRate / 100;
+      const baseFmv = state.assumptions.fmv;
+      const lastActualYear = rows[rows.length - 1].year;
+      const baseYearForGrowth = conversionYear ?? lastActualYear;
+
+      for (let offset = 1; offset <= 5; offset += 1) {
+        const year = lastActualYear + offset;
+        const stepsFromBase = Math.max(0, year - baseYearForGrowth);
+        const projectedFmv = roundTo(baseFmv * Math.pow(growthMultiplierBase, stepsFromBase), 2);
+        rows.push({
+          year,
+          shares: 0,
+          income: 0,
+          tax: 0,
+          fmv: projectedFmv,
+          projected: true,
+        });
       }
+
+  const totalOutstandingShares = state.assumptions.totalShares || DEFAULT_ASSUMPTIONS.totalShares;
+  const firstActualFmv = rows.find((row) => !row.projected)?.fmv ?? baseFmv;
+  let totalIncome = 0;
+  let totalTax = 0;
+  let totalShares = 0;
+  let runningShares = 0;
+  let lastFmv = firstActualFmv;
+  let lastActualFmv = firstActualFmv;
+      let actualRows = 0;
+
+      rows.forEach((bucket) => {
+        const rowFmv = Number.isFinite(bucket.fmv) ? bucket.fmv : lastFmv;
+        lastFmv = rowFmv;
+
+        if (!bucket.projected) {
+          totalIncome += bucket.income;
+          totalTax += bucket.tax;
+          runningShares += bucket.shares;
+          totalShares = runningShares;
+          lastActualFmv = rowFmv;
+          actualRows += 1;
+        }
+
+        const label = bucket.projected ? `Projection for ${bucket.year}` : `Taxes for ${bucket.year}`;
+        const sharesCell = bucket.shares ? formatInteger(bucket.shares) : '0';
+        const companyValuationValue = totalOutstandingShares
+          ? formatCurrency(rowFmv * totalOutstandingShares)
+          : '—';
+        const taxValue = bucket.projected ? formatCurrency(0) : formatCurrency(bucket.tax);
+        const currentShares = runningShares;
+        const currentValue = currentShares ? currentShares * rowFmv : 0;
+        const cumulativeSharesCell = currentShares ? formatInteger(currentShares) : '—';
+        const cumulativeValueCell = currentShares ? formatCurrency(currentValue) : '—';
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${label}</td>
+          <td>${sharesCell}</td>
+          <td>${formatCurrency(rowFmv)}</td>
+          <td>${companyValuationValue}</td>
+          <td class="tax-cell">${taxValue}</td>
+          <td>${cumulativeSharesCell}</td>
+          <td>${cumulativeValueCell}</td>
+        `;
+        els.tableBody.appendChild(row);
+      });
 
       return {
         totalIncome,
         totalTax,
-        rowsRendered,
+        rowsRendered: actualRows,
       };
     };
 
-  const renderWithout83bSummary = ({ totalTax, rowsRendered } = { totalTax: 0, rowsRendered: 0 }) => {
+    const renderWithout83bSummary = ({ totalTax, rowsRendered } = { totalTax: 0, rowsRendered: 0 }) => {
       if (!els.outTaxNo83b) return;
       if (!state.grants.length) {
         els.outTaxNo83b.textContent = '—';

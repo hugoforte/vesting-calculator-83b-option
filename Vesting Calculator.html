@@ -16,17 +16,17 @@
         <h2>Grants</h2>
         <button type="button" id="addGrantBtn" class="btn">Add Grant</button>
       </div>
-  <p class="lead small">Adjust each grant's assumptions below. All results aggregate across the list.</p>
+      <p class="lead small">Adjust each grant's assumptions below. All results aggregate across the list.</p>
       <div id="grantsList" class="stack-vertical"></div>
     </div>
 
     <div class="card" style="margin-top:8px">
       <h2>Constants</h2>
       <div class="stack">
-        <div class="kv"><div>Total shares outstanding</div><div>10,000,000</div></div>
-        <div class="kv"><div>Company post-money valuation</div><div>$50,000,000</div></div>
-        <div class="kv"><div>FMV per share at grant</div><div id="fmvStart">$5.00</div></div>
-        <div class="kv"><div>Conversion to C‑corp date</div><div id="convLabel">Dec 1, 2025</div></div>
+        <div class="kv"><div>Total shares outstanding</div><div id="totalSharesConst">—</div></div>
+        <div class="kv"><div>Company post-money valuation</div><div id="postMoneyConst">—</div></div>
+        <div class="kv"><div>FMV per share at grant</div><div id="fmvStart">—</div></div>
+        <div class="kv"><div>Conversion to C-corp date</div><div id="convLabel">—</div></div>
       </div>
     </div>
 
@@ -52,7 +52,7 @@
               <th>New shares vested</th>
               <th>FMV / share</th>
               <th>Ordinary income</th>
-              <th>Tax (@ rate)</th>
+              <th>Tax</th>
             </tr>
           </thead>
           <tbody></tbody>

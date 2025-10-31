@@ -9,6 +9,8 @@
     sumTax: document.getElementById('sumTax'),
     fmvStart: document.getElementById('fmvStart'),
     convLabel: document.getElementById('convLabel'),
+    totalSharesConst: document.getElementById('totalSharesConst'),
+    postMoneyConst: document.getElementById('postMoneyConst'),
   });
 
   window.calcDom = {

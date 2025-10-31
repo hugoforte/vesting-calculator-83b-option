@@ -1,26 +1,21 @@
 (() => {
-  const { FMV_BASE, CONV_DATE } = window.calcConstants;
+  const {
+    TOTAL_SHARES_OUTSTANDING,
+    COMPANY_POST_MONEY_VALUATION,
+    FMV_BASE,
+    CONV_DATE,
+  } = window.calcConstants;
   const { formatCurrency, formatInteger } = window.calcFormatters;
   const { addYears } = window.calcDateUtils;
   const { getElements } = window.calcDom;
 
   const DEFAULT_START = '2024-01-01';
-  const MAX_NAME_LENGTH = 60;
   const dateFormatter = new Intl.DateTimeFormat(undefined, {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
   });
 
-  const htmlEscapes = {
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#39;',
-  };
-
-  const escapeHtml = (value = '') => String(value).replace(/[&<>"']/g, (char) => htmlEscapes[char]);
   const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 
   const numberOrNull = (value) => {
@@ -120,7 +115,11 @@
       nextId: 1,
     };
 
-    const defaultGrantName = (index) => `Grant ${index + 1}`;
+    const formatGrantHeading = (grant, index) => {
+      const base = `Grant ${index + 1}`;
+      const startDate = createDateFromISO(grant.start);
+      return startDate ? `${base} · ${dateFormatter.format(startDate)}` : base;
+    };
 
     const renderGrants = () => {
       if (!state.grants.length) {
@@ -131,18 +130,14 @@
 
       const markup = state.grants
         .map((grant, index) => {
-          const displayName = grant.name.trim() ? grant.name : defaultGrantName(index);
+          const heading = formatGrantHeading(grant, index);
           return `
             <div class="grant-card" data-grant-id="${grant.id}">
               <div class="grant-head">
-                <h3 class="grant-title">${escapeHtml(displayName)}</h3>
+                <h3 class="grant-title">${heading}</h3>
                 <button type="button" class="btn-ghost" data-action="remove" data-id="${grant.id}">Remove</button>
               </div>
               <div class="inputs-grid">
-                <div>
-                  <label for="grant-name-${grant.id}">Label</label>
-                  <input id="grant-name-${grant.id}" type="text" maxlength="${MAX_NAME_LENGTH}" data-field="name" data-id="${grant.id}" value="${escapeHtml(grant.name)}" placeholder="${escapeHtml(defaultGrantName(index))}" />
-                </div>
                 <div>
                   <label for="grant-shares-${grant.id}">Grant amount (total shares)</label>
                   <input id="grant-shares-${grant.id}" type="number" min="1" step="1" data-field="shares" data-id="${grant.id}" value="${grant.shares}" />
@@ -231,7 +226,6 @@
     const createGrant = (overrides = {}) => {
       const grant = {
         id: state.nextId,
-        name: typeof overrides.name === 'string' ? overrides.name.slice(0, MAX_NAME_LENGTH) : '',
         shares: sanitizeShares(overrides.shares ?? 70000),
         start: sanitizeDate(overrides.start ?? DEFAULT_START),
         years: sanitizeYears(overrides.years ?? 7),
@@ -261,20 +255,9 @@
       const grant = state.grants.find((item) => item.id === id);
       if (!grant) return;
 
-      const index = state.grants.indexOf(grant);
       let shouldRecalculate = false;
 
       switch (field) {
-        case 'name': {
-          const value = typeof rawValue === 'string' ? rawValue.slice(0, MAX_NAME_LENGTH) : '';
-          grant.name = value;
-          const card = target.closest('.grant-card');
-          if (card) {
-            const title = card.querySelector('.grant-title');
-            if (title) title.textContent = value.trim() ? value : defaultGrantName(index);
-          }
-          break;
-        }
         case 'shares': {
           const numeric = numberOrNull(rawValue);
           if (numeric === null) return;
@@ -327,6 +310,14 @@
             shouldRecalculate = true;
           }
           target.value = grant.start;
+          const card = target.closest('.grant-card');
+          if (card) {
+            const heading = card.querySelector('.grant-title');
+            if (heading) {
+              const index = state.grants.indexOf(grant);
+              heading.textContent = formatGrantHeading(grant, index);
+            }
+          }
           break;
         }
         default:
@@ -360,8 +351,10 @@
       }
     };
 
-    if (els.fmvStart) els.fmvStart.textContent = formatCurrency(FMV_BASE);
-    if (els.convLabel) els.convLabel.textContent = dateFormatter.format(CONV_DATE);
+  if (els.totalSharesConst) els.totalSharesConst.textContent = formatInteger(TOTAL_SHARES_OUTSTANDING);
+  if (els.postMoneyConst) els.postMoneyConst.textContent = formatCurrency(COMPANY_POST_MONEY_VALUATION);
+  if (els.fmvStart) els.fmvStart.textContent = formatCurrency(FMV_BASE);
+  if (els.convLabel) els.convLabel.textContent = dateFormatter.format(CONV_DATE);
 
     renderGrants();
     els.addGrantBtn.addEventListener('click', () => addGrant());
@@ -370,8 +363,15 @@
     els.grantsList.addEventListener('click', handleGrantClick);
 
     addGrant({
-      shares: 70000,
-      start: DEFAULT_START,
+      shares: 10000,
+      start: '2023-01-01',
+      years: 4,
+      taxRate: 42,
+      growthRate: 35,
+    });
+    addGrant({
+      shares: 5000,
+      start: '2024-01-01',
       years: 7,
       taxRate: 42,
       growthRate: 35,

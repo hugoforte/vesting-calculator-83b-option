@@ -8,6 +8,7 @@
   const DEFAULT_START = '2024-01-01';
   const DEFAULT_TAX_RATE = 42;
   const DEFAULT_GROWTH_RATE = 35;
+  const DEFAULT_PROJECTION_YEARS = 5;
   const roundTo = (value, decimals = 6) => {
     if (!Number.isFinite(value)) return 0;
     const factor = 10 ** decimals;
@@ -34,6 +35,7 @@
     conversionDate: DEFAULT_CONVERSION_DATE_ISO,
     taxRate: DEFAULT_TAX_RATE,
     growthRate: DEFAULT_GROWTH_RATE,
+    projectionYears: DEFAULT_PROJECTION_YEARS,
   };
 
   const cloneDefaultAssumptions = () => ({ ...DEFAULT_ASSUMPTIONS });
@@ -73,6 +75,12 @@
     const numeric = Number(value);
     if (!Number.isFinite(numeric)) return 0;
     return clamp(numeric, -100, 500);
+  };
+
+  const sanitizeProjectionYears = (value) => {
+    const numeric = Number(value);
+    if (!Number.isFinite(numeric)) return DEFAULT_PROJECTION_YEARS;
+    return clamp(Math.floor(numeric), 0, 25);
   };
 
   const sanitizeDate = (value) =>
@@ -227,6 +235,7 @@
         conversionDate: sanitizeConversionAssumption(state.assumptions.conversionDate),
         taxRate: sanitizeGlobalTaxRate(state.assumptions.taxRate),
         growthRate: sanitizeGlobalGrowthRate(state.assumptions.growthRate),
+        projectionYears: sanitizeProjectionYears(state.assumptions.projectionYears),
       };
       state.assumptions = { ...sanitizedAssumptions };
       const meta = {
@@ -331,6 +340,9 @@
             }
             if (Object.prototype.hasOwnProperty.call(source, 'growthRate')) {
               assumptions.growthRate = sanitizeGlobalGrowthRate(source.growthRate);
+            }
+            if (Object.prototype.hasOwnProperty.call(source, 'projectionYears')) {
+              assumptions.projectionYears = sanitizeProjectionYears(source.projectionYears);
             }
           }
 
@@ -451,13 +463,15 @@
 
     const renderAssumptions = () => {
       if (!els.assumptions) return;
-      const { totalShares, postMoney, fmv, conversionDate, taxRate, growthRate } = els.assumptions;
+      const { totalShares, postMoney, fmv, conversionDate, taxRate, growthRate, projectionYears } =
+        els.assumptions;
       if (totalShares) totalShares.value = String(state.assumptions.totalShares);
       if (postMoney) postMoney.value = String(state.assumptions.postMoney);
       if (fmv) fmv.value = state.assumptions.fmv.toFixed(2);
       if (conversionDate) conversionDate.value = state.assumptions.conversionDate;
       if (taxRate) taxRate.value = String(state.assumptions.taxRate);
       if (growthRate) growthRate.value = String(state.assumptions.growthRate);
+      if (projectionYears) projectionYears.value = String(state.assumptions.projectionYears);
     };
 
     const maybeSyncDerivedFmv = ({ force = false } = {}) => {
@@ -520,7 +534,8 @@
       const lastActualYear = rows[rows.length - 1].year;
       const baseYearForGrowth = conversionYear ?? lastActualYear;
 
-      for (let offset = 1; offset <= 5; offset += 1) {
+      const projectionYears = sanitizeProjectionYears(state.assumptions.projectionYears);
+      for (let offset = 1; offset <= projectionYears; offset += 1) {
         const year = lastActualYear + offset;
         const stepsFromBase = Math.max(0, year - baseYearForGrowth);
         const projectedFmv = roundTo(baseFmv * Math.pow(growthMultiplierBase, stepsFromBase), 2);
@@ -831,6 +846,14 @@
           const sanitized = sanitizeGlobalGrowthRate(target.value);
           if (sanitized !== state.assumptions.growthRate) {
             state.assumptions.growthRate = sanitized;
+            changed = true;
+          }
+          break;
+        }
+        case 'projectionYears': {
+          const sanitized = sanitizeProjectionYears(target.value);
+          if (sanitized !== state.assumptions.projectionYears) {
+            state.assumptions.projectionYears = sanitized;
             changed = true;
           }
           break;

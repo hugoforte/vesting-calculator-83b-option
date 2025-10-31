@@ -10,10 +10,11 @@
       conversionDate: document.getElementById('assumptionConversionDate'),
       taxRate: document.getElementById('assumptionTaxRate'),
       growthRate: document.getElementById('assumptionGrowthRate'),
+      projectionYears: document.getElementById('assumptionProjectionYears'),
     },
     outTotalVested83b: document.getElementById('outTotalVested83b'),
     outTax83b: document.getElementById('outTax83b'),
-  outTaxNo83b: document.getElementById('outTaxNo83b'),
+    outTaxNo83b: document.getElementById('outTaxNo83b'),
     tableBody: document.querySelector('#tableNo83b tbody'),
     outShareValue83b: document.getElementById('outShareValue83b'),
   });
